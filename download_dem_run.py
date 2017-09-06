@@ -1,6 +1,6 @@
 from download_dem import dem_loader
 
 
-lat=35  #39
-lon=-104 #-122
+lat=39 #35  #
+lon=-122 #-104 #
 dem_loader(latitude=lat, longitude=lon)
