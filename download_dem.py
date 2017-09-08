@@ -25,7 +25,7 @@ def write_prefix_names(latlon):
     # Latitude and longitude are rounded up to position of the top
     # left corner of the DEM
     for x in range(0,len(latlon)):
-        (lat, lon) = (math.ceil(latlon[x][0]), abs(math.ceil(latlon[x][1])))
+        (lat, lon) = (math.ceil(latlon[x][0]), math.ceil(abs(latlon[x][1])))
         latlon[x] = (lat,lon)
 
     # For loop that returns a list of file names corresponding to the input
