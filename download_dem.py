@@ -1,6 +1,4 @@
 
-import urllib.request  # works with python3
-from bs4 import BeautifulSoup
 import os
 import math
 import lxml
@@ -10,16 +8,10 @@ import ftplib
 # A DEM will be downloaded that contains the lat,long inputs specified by
 # the user.
 
-
-
-
-
 def write_prefix_names(latlon):
     '''
     A function to write file names from lat, long positions with 10m resolution. 
     latlon: a list of latitude, longitude tuples
-    kind: file format for download only options are '.zip' or '.jpg'
-    resolution: 13 stands for 1/3 arcsecond which is ~10 m
     '''
 
     # Latitude and longitude are rounded up to position of the top
@@ -39,54 +31,51 @@ def write_prefix_names(latlon):
 
 
 def build_file_paths(prefix, kind='.zip', resolution=13):
+    '''function to build file paths to access DEM tiles
+    prefix: returned from write_prefix_function, a list of tile names (e.g. 'n39w120')
+    kind: file format for download only options are '.zip' or '.jpg'
+    resolution: 13 stands for 1/3 arcsecond which is ~10 m. If this is changed will throw 
+    error, this is a place we could expand upon to download DEMs with different resolution.
+    '''
     # Create a dictionay of all the possible filename formats.
-    filenames = []
+    file_path_names = []
     if kind == '.zip':
         for file in prefix:
             f = {'short_name': file + '.zip',
                  'long_name': 'USGS_NED_13_' + file + '_IMG.zip' }
-            filenames.append(f)
+            file_path_names.append(f)
     else: 
         for file in prefix:
             f = {'short_name': 'img' + str(file) + '_' + str(resolution) + '_thumb.jpg',
                  'short_name_alternate': str(file) + '_' + str(resolution) + '_thumb.jpg',
                  'long_name': 'USGS_NED_13_' + str(file) + '_IMG_thumb.jpg' }
-            filenames.append(f)
+            file_path_names.append(f)
 
-    return filenames
+    return file_path_names
 
 
-def retrieve_DEMS(filenames):
-    all_file_paths = build_file_paths(filenames)
-
-    for path in all_file_paths:
-        for k, v in path.items():
-            try:
-                ftp_path = URL + v
-                wget.download(ftp_path, out=v)
-
-            except urllib.request.URLError:
-                print('%s does not exist' % ftp_path)
-                continue
-
-def getFile(filepath):
-    ftp = ftplib.FTP('rockyftp.cr.usgs.gov')
+def getFile(file_path_names):
+    ''' Function used by retrieve_DEMS_ftp that logs into the ftp server
+    and downloads the DEM tiles.
+    file_path_names: list of extended file path names in dictionary format.
+    '''
+    ftp = ftplib.FTP('rockyftp.cr.usgs.gov') # Root of USGS ftp NED server
     ftp.login()
-    #print(ftp.getwelcome())
+    #print(ftp.getwelcome()) # Print welcome statement
     ftp.cwd('/vdelivery/Datasets/Staged/NED/13/IMG/')
-    #ftp.retrlines('LIST')
+    #ftp.retrlines('LIST') # List files
 
     ftp.sendcmd("TYPE I")    # Switch to Binary mode
-    size_matters = ftp.size(filepath)/1000000
-    print('\n Your file ' + str(filepath) + ' is THIS big: ' + str(size_matters) + ' MegaBytes \n')
-    ftp.sendcmd("TYPE A")
+    size_matters = ftp.size(file_path_names)/1000000
+    print('\n Your file ' + str(file_path_names) + ' is THIS big: ' + str(size_matters) + ' MegaBytes \n')
+    ftp.sendcmd("TYPE A") # Switch back to ASCII mode
 
     what_to_do = input('Do you want to download it? [y/n]: ' )
 
     if what_to_do == 'y':
         print('Okay, this may take a while...')
-        file = open(filepath, 'wb')
-        ftp.retrbinary('RETR %s' % filepath, file.write, 1024)
+        file = open(file_path_names, 'wb')
+        ftp.retrbinary('RETR %s' % file_path_names, file.write, 1024)
         file.close()
     elif what_to_do == 'n':
         print('Well that\'s boring')
@@ -95,18 +84,17 @@ def getFile(filepath):
     
     ftp.quit()
 
-def retrieve_DEMS_ftp(all_file_paths):
-    #all_file_paths = build_file_paths(prefix)
-    URL = 'ftp://rockyftp.cr.usgs.gov/vdelivery/Datasets/Staged/NED/13/IMG/' #% str(resolution) 
+def retrieve_DEMS_ftp(file_path_names):
+    '''Function that retrieves the DEM tiles from the USGS ftp server.
+    file_path_names: dictionay of all possible file path names.
+    '''
     print('Searching all files with these names...\n')
 
-    for path in all_file_paths:
+    for path in file_path_names:
         for k, v in path.items():
-            ftp_path = URL + v
             try:
                 getFile(v)
 
-            #except urllib.request.URLError:
             except ftplib.all_errors:
-                print('%s does not exist' % ftp_path)
+                print('\n%s does not exist' % v)
                 continue
