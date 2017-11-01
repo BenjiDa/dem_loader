@@ -148,7 +148,7 @@ def get_latlonPts_within_shape(shpPath):
         print('Whoopsy, that file is either out of bounds or in the wrong coordinate system. Please use a geographic projection.')
         return None
 
-    else
+    else:
         return _getGridsInBounds(latBounds,longBounds)
 
 def _getGridsInBounds(latBounds,longBounds,dTheta = 1):
