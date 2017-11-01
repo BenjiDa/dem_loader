@@ -1,8 +1,13 @@
 
+#Import statements for remote file retrival
 import os
 import math
 import lxml
 import ftplib
+
+#Import statements fpr shape based queries
+import ogr #For opening shapefiles
+import numpy as np
 
 # User will input lat long which will be rounded to the top left corner of the DEM.
 # A DEM will be downloaded that contains the lat,long inputs specified by
@@ -98,3 +103,72 @@ def retrieve_DEMS_ftp(file_path_names):
             except ftplib.all_errors:
                 print('\n%s does not exist' % v)
                 continue
+
+
+################
+# Functions for shape based queries
+################
+
+def get_latlonPts_within_shape(shpPath):
+    '''
+    Given a shape file, finds all the lat long coordinates of the upper left corners of the 1/3 arc second DEMs contained
+    within the extent of those shapes
+
+    :param shpPath: a file path to a shapefile
+    :return: latlons, a list of lat,lon tuple pairs to feed to 'write_prefix_names'.
+    '''
+
+
+    src = ogr.Open(shpPath) #Load in the OGR shapefile object
+
+    try:
+
+        lyr = src.GetLayer(0) #Get the top layer from the shapefile
+
+    except:
+
+        print('Whoopsy, a problem with retrieving the layer from the shapefile - you sure you got the filepath right?')
+        return None
+
+    try:
+
+        extent = lyr.GetExtent() #Get the bounding coordinates of the shapefile (min lon, max lon, min lat, max lat_
+
+    except:
+
+        print('Whoopsy, a problem with retrieving the extent of the layer - you sure this is a valid shapefile?')
+        return None
+
+    #Get the bounds
+    longBounds = extent[0,1]
+    latBounds = extent[2,3]
+
+    #Quick and dirty check to make sure that this shape was in geographic coordinates
+    if any([(abs(lb)>180) for lb in longBounds]) or any([(abs(lb)>90) for lb in latBounds]):
+        print('Whoopsy, that file is either out of bounds or in the wrong coordinate system. Please use a geographic projection.')
+        return None
+
+    else
+        return _getGridsInBounds(latBounds,longBounds)
+
+def _getGridsInBounds(latBounds,longBounds,dTheta = 1):
+    '''
+    Splits the lat long boundaries given into a list of all points within that range at the specified spacing dTheta
+
+    :param latBounds: (min latitude, max latitude)
+    :param longBounds: (min longitude, max longitude)
+    :return:
+    '''
+
+    #Get X-Y points at the specified spacing
+    lats = np.arange(latBounds[0],latBounds[1],dTheta)
+    longs = np.arange(longBounds[0],longBounds[1],dTheta)
+
+    #Iterate through points, creating a list of tuples as we go
+    latLongs = []
+    for lat in lats:
+        for long in longs:
+            latLongs.append((lat,long))
+
+    return latLongs
+
