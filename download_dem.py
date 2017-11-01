@@ -27,7 +27,7 @@ def write_prefix_names(latlon):
     # latitude, longitude points.
     prefix = []
     for x in range(0,len(latlon)):
-        loc = 'n%sw%s' % (str(latlon[x][0]), str(latlon[x][1]))
+        loc = 'n%dw%d' % (latlon[x][0], latlon[x][1]) #Changed this from type casting strings to formatting as integers
         prefix.append(loc)
 
     return prefix
