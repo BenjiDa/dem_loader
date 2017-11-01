@@ -7,8 +7,6 @@ import ftplib
 
 #Import statements fpr shape based queries
 import ogr #For opening shapefiles
-import numpy as np
-
 # User will input lat long which will be rounded to the top left corner of the DEM.
 # A DEM will be downloaded that contains the lat,long inputs specified by
 # the user.
@@ -140,8 +138,8 @@ def get_latlonPts_within_shape(shpPath):
         return None
 
     #Get the bounds
-    longBounds = extent[0,1]
-    latBounds = extent[2,3]
+    longBounds = extent[0:2]
+    latBounds = extent[2:]
 
     #Quick and dirty check to make sure that this shape was in geographic coordinates
     if any([(abs(lb)>180) for lb in longBounds]) or any([(abs(lb)>90) for lb in latBounds]):
@@ -161,8 +159,8 @@ def _getGridsInBounds(latBounds,longBounds,dTheta = 1):
     '''
 
     #Get X-Y points at the specified spacing
-    lats = np.arange(latBounds[0],latBounds[1],dTheta)
-    longs = np.arange(longBounds[0],longBounds[1],dTheta)
+    lats = [math.floor(latBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(latBounds[1]) - math.floor(latBounds[0]))/dTheta))]
+    longs = [math.floor(longBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(longBounds[1]) - math.floor(longBounds[0]))/dTheta))]
 
     #Iterate through points, creating a list of tuples as we go
     latLongs = []
