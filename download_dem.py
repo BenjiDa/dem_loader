@@ -120,20 +120,14 @@ def get_latlonPts_within_shape(shpPath):
     src = ogr.Open(shpPath) #Load in the OGR shapefile object
 
     try:
-
         lyr = src.GetLayer(0) #Get the top layer from the shapefile
-
     except:
-
         print('Whoopsy, a problem with retrieving the layer from the shapefile - you sure you got the filepath right?')
         return None
 
     try:
-
         extent = lyr.GetExtent() #Get the bounding coordinates of the shapefile (min lon, max lon, min lat, max lat_
-
     except:
-
         print('Whoopsy, a problem with retrieving the extent of the layer - you sure this is a valid shapefile?')
         return None
 
@@ -145,7 +139,6 @@ def get_latlonPts_within_shape(shpPath):
     if any([(abs(lb)>180) for lb in longBounds]) or any([(abs(lb)>90) for lb in latBounds]):
         print('Whoopsy, that file is either out of bounds or in the wrong coordinate system. Please use a geographic projection.')
         return None
-
     else:
         return _getGridsInBounds(latBounds,longBounds)
 
@@ -162,7 +155,7 @@ def _getGridsInBounds(latBounds,longBounds,dTheta = 1):
     lats = [math.floor(latBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(latBounds[1]) - math.floor(latBounds[0]))/dTheta))]
     longs = [math.floor(longBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(longBounds[1]) - math.floor(longBounds[0]))/dTheta))]
 
-    #Iterate through points, creating a list of tuples as we go
+    #Iterate through points, creating a list of (lat,lon) tuples as we go
     latLongs = []
     for lat in lats:
         for long in longs:
