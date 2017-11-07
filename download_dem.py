@@ -152,7 +152,7 @@ def _getGridsInBounds(latBounds,longBounds,dTheta = 1):
     '''
 
     #Get X-Y points at the specified spacing
-    lats = [math.floor(latBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(latBounds[1]) - math.floor(latBounds[0]))/dTheta))]
+    lats = [math.ceil(latBounds[0]) + i*dTheta for i in range(int((math.ceil(latBounds[1]) - math.floor(latBounds[0]))/dTheta))]
     longs = [math.floor(longBounds[0]) + i*dTheta for i in range(int(1 + (math.floor(longBounds[1]) - math.floor(longBounds[0]))/dTheta))]
 
     #Iterate through points, creating a list of (lat,lon) tuples as we go
